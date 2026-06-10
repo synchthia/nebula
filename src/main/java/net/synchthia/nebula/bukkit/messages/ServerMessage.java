@@ -14,26 +14,26 @@ public class ServerMessage {
     public static List<TagResolver> getServerEntryResolver(NebulaProtos.ServerEntry server) {
         return new ArrayList<>(Arrays.asList(
                 // name
-                Placeholder.parsed("server_id", server.getName()),
+                Placeholder.unparsed("server_id", server.getName()),
 
                 // display_name
                 Placeholder.parsed("server_name", server.getDisplayName()),
 
                 // address
-                Placeholder.parsed("server_address", server.getAddress()),
+                Placeholder.unparsed("server_address", server.getAddress()),
 
                 // port
-                Placeholder.parsed("server_port", String.format("%d", server.getPort())),
+                Placeholder.unparsed("server_port", String.format("%d", server.getPort())),
 
                 //
                 // Status
                 //
 
                 // players
-                Placeholder.parsed("server_online_players", String.format("%d", server.getStatus().getPlayers().getOnline())),
+                Placeholder.unparsed("server_online_players", String.format("%d", server.getStatus().getPlayers().getOnline())),
 
                 // max players
-                Placeholder.parsed("server_max_players", String.format("%d", server.getStatus().getPlayers().getMax())),
+                Placeholder.unparsed("server_max_players", String.format("%d", server.getStatus().getPlayers().getMax())),
 
                 // motd (full length)
                 Placeholder.parsed("server_motd", server.getStatus().getDescription()),

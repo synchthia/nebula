@@ -21,6 +21,9 @@ import java.util.logging.Level;
 
 @Getter
 public class ServerSignManager {
+    private static final Component STARTING = Message.create("<dark_gray><bold>● STARTING ●</bold></dark_gray>");
+    private static final Component ONLINE = Message.create("<dark_blue><bold>● ONLINE ●</bold></dark_blue>");
+    private static final Component OFFLINE = Message.create("<dark_red><bold>■ OFFLINE ■</bold></dark_red>");
     private final NebulaPlugin plugin;
     private final SignManager signManager = new SignManager();
 
@@ -58,7 +61,7 @@ public class ServerSignManager {
                 bukkitSign.line(i, format[i]);
             }
 
-            bukkitSign.update();
+            bukkitSign.update(false, false);
         });
     }
 
@@ -73,16 +76,16 @@ public class ServerSignManager {
                     return new Component[]{
                             Component.empty(),
                             Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                            Message.create("<dark_gray><bold>● STARTING ●</bold></dark_gray>", TagResolver.resolver(resolvers)),
+                            STARTING,
                             Component.empty(),
                     };
                 } else {
                     // Online
                     return new Component[]{
                             Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                            Message.create("<server_motd>", TagResolver.resolver(resolvers)),
+                            Message.create(server.getMotd(), TagResolver.resolver(resolvers)),
                             Message.create("<dark_gray><bold><server_online_players>/<server_max_players></bold></dark_gray>", TagResolver.resolver(resolvers)),
-                            Message.create("<dark_blue><bold>● ONLINE ●</bold></dark_blue>", TagResolver.resolver(resolvers))
+                            ONLINE
                     };
                 }
             } else {
@@ -90,7 +93,7 @@ public class ServerSignManager {
                 return new Component[]{
                         Component.empty(),
                         Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                        Message.create("<dark_red><bold>■ OFFLINE ■</bold></dark_red>", TagResolver.resolver(resolvers)),
+                        OFFLINE,
                         Component.empty(),
                 };
             }
