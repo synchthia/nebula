@@ -151,4 +151,15 @@ publishing {
             artifact(tasks.shadowJar)
         }
     }
+
+    repositories {
+        maven {
+            name = "startail-public"
+            url = uri("https://maven.pkg.github.com/synchthia/pkg-startail-public")
+            credentials {
+                username = System.getenv("MVN_REPO_USERNAME")
+                password = System.getenv("MVN_REPO_PASSWORD")
+            }
+        }
+    }
 }
