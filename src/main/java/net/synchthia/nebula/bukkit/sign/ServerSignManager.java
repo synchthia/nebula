@@ -1,7 +1,8 @@
 package net.synchthia.nebula.bukkit.sign;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -11,14 +12,13 @@ import net.synchthia.nebula.bukkit.messages.Message;
 import net.synchthia.nebula.bukkit.messages.ServerMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -32,10 +32,15 @@ public class ServerSignManager {
     private static final Component ONLINE = Message.create("<dark_blue><bold>● ONLINE ●</bold></dark_blue>");
     private static final Component OFFLINE = Message.create("<dark_red><bold>■ OFFLINE ■</bold></dark_red>");
     private final Map<String, NebulaProtos.ServerEntry> previousServerEntry = new HashMap<>();
-    private final LoadingCache<NebulaProtos.ServerEntry, Component[]> signCache = Caffeine.newBuilder()
+    private final LoadingCache<NebulaProtos.ServerEntry, Component[]> signCache = CacheBuilder.newBuilder()
             .maximumSize(100)
             .expireAfterAccess(1, TimeUnit.MINUTES)
-            .build(this::generateSignComponent);
+            .build(new CacheLoader<>() {
+                @Override
+                public Component @NonNull [] load(NebulaProtos.@NonNull ServerEntry key) {
+                    return generateSignComponent(key);
+                }
+            });
     private final NebulaPlugin plugin;
     private final SignManager signManager = new SignManager();
 
@@ -67,11 +72,7 @@ public class ServerSignManager {
 
     public void updateSigns() {
         signManager.findAllSigns().forEach(sign -> {
-            Component[] format = getFormatIfUpdated(sign.getKey());
-            if (format == null) {
-                return;
-            }
-
+            Component[] format = getFormat(sign.getKey());
             Sign bukkitSign = sign.getSign();
             for (int i = 0; i < format.length; i++) {
                 bukkitSign.line(i, format[i]);
@@ -81,59 +82,48 @@ public class ServerSignManager {
         });
     }
 
-    public Component @Nullable [] getFormatIfUpdated(String key) {
-        NebulaProtos.ServerEntry server = plugin.getServerAPI().getServer(key).orElse(null);
-        NebulaProtos.ServerEntry previous = previousServerEntry.put(key, server);
-        if (server != null && Objects.equals(server, previous)) {
-            return null;
-        }
-
-        return signCache.get(server);
-    }
-
     public Component[] getFormat(String key) {
         NebulaProtos.ServerEntry server = plugin.getServerAPI().getServer(key).orElse(null);
-        return signCache.get(server);
+        if (server == null) {
+            return new Component[] {
+                    Component.empty(),
+                    Component.empty(),
+                    Component.empty(),
+                    Component.empty(),
+            };
+        }
+        return signCache.getUnchecked(server);
     }
 
     private Component[] generateSignComponent(NebulaProtos.ServerEntry server) {
-        if (server != null) {
-            List<TagResolver> resolvers = ServerMessage.getServerEntryResolver(server);
+        List<TagResolver> resolvers = ServerMessage.getServerEntryResolver(server);
 
-            if (server.getStatus().getOnline()) {
-                if (server.getStatus().getPlayers().getMax() == 0) {
-                    // Starting
-                    return new Component[]{
-                            Component.empty(),
-                            Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                            STARTING,
-                            Component.empty(),
-                    };
-                } else {
-                    // Online
-                    return new Component[]{
-                            Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                            Message.create(server.getMotd(), TagResolver.resolver(resolvers)),
-                            Message.create("<dark_gray><bold><server_online_players>/<server_max_players></bold></dark_gray>", TagResolver.resolver(resolvers)),
-                            ONLINE
-                    };
-                }
-            } else {
-                // Offline
+        if (server.getStatus().getOnline()) {
+            if (server.getStatus().getPlayers().getMax() == 0) {
+                // Starting
                 return new Component[]{
                         Component.empty(),
                         Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                        OFFLINE,
+                        STARTING,
                         Component.empty(),
                 };
+            } else {
+                // Online
+                return new Component[]{
+                        Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
+                        Message.create(server.getMotd(), TagResolver.resolver(resolvers)),
+                        Message.create("<dark_gray><bold><server_online_players>/<server_max_players></bold></dark_gray>", TagResolver.resolver(resolvers)),
+                        ONLINE
+                };
             }
+        } else {
+            // Offline
+            return new Component[]{
+                    Component.empty(),
+                    Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
+                    OFFLINE,
+                    Component.empty(),
+            };
         }
-
-        return new Component[]{
-                Component.empty(),
-                Component.empty(),
-                Component.empty(),
-                Component.empty(),
-        };
     }
 }
