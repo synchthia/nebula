@@ -43,7 +43,7 @@ public class SignData {
             return null;
         }
         Block block = world.getBlockAt(x, y, z);
-        if (block.getState() instanceof Sign) {
+        if (block.getState(false) instanceof Sign) {
             return block;
         }
         return null;
