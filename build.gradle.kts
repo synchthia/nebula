@@ -118,6 +118,8 @@ tasks {
         reloc("org.apache.commons")
         reloc("com.google.protobuf")
         reloc("org.apache.commons.pool2")
+        reloc("io.grpc")
+        reloc("io.netty")
     }
 
     assemble {
