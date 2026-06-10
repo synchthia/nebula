@@ -25,28 +25,8 @@ public class PlayerSubs extends JedisPubSub {
         switch (playerPropertiesStream.getType()) {
             case JOIN_SOLO -> {
                 NebulaProtos.PlayerProfile profile = playerPropertiesStream.getSolo();
-                plugin.getTabList().addPlayer(new TabListEntry(
-                        UUID.fromString(profile.getPlayerUUID()),
-                        profile.getPlayerName(),
-                        profile.getPlayerLatency(),
-                        profile.getCurrentServer(),
-                        PlayerProperty.fromProtobuf(profile.getPropertiesList()),
-                        profile.getHide()
-                ));
-                plugin.getPlayerAPI().addPlayer(profile);
-            }
-            case QUIT_SOLO -> {
-                NebulaProtos.PlayerProfile profile = playerPropertiesStream.getSolo();
-                plugin.getTabList().removePlayer(UUID.fromString(profile.getPlayerUUID()));
-                plugin.getPlayerAPI().removePlayer(profile);
-            }
-            case ADVERTISE_ALL -> {
-                List<NebulaProtos.PlayerProfile> profiles = playerPropertiesStream.getAllList();
-                plugin.getPlayerAPI().updatePlayers(profiles);
-
-                Map<UUID, TabListEntry> entries = new HashMap<>();
-                for (NebulaProtos.PlayerProfile profile : profiles) {
-                    entries.put(UUID.fromString(profile.getPlayerUUID()), new TabListEntry(
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    plugin.getTabList().addPlayer(new TabListEntry(
                             UUID.fromString(profile.getPlayerUUID()),
                             profile.getPlayerName(),
                             profile.getPlayerLatency(),
@@ -54,9 +34,35 @@ public class PlayerSubs extends JedisPubSub {
                             PlayerProperty.fromProtobuf(profile.getPropertiesList()),
                             profile.getHide()
                     ));
-                }
+                    plugin.getPlayerAPI().addPlayer(profile);
+                });
+            }
+            case QUIT_SOLO -> {
+                NebulaProtos.PlayerProfile profile = playerPropertiesStream.getSolo();
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    plugin.getTabList().removePlayer(UUID.fromString(profile.getPlayerUUID()));
+                    plugin.getPlayerAPI().removePlayer(profile);
+                });
+            }
+            case ADVERTISE_ALL -> {
+                List<NebulaProtos.PlayerProfile> profiles = playerPropertiesStream.getAllList();
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    plugin.getPlayerAPI().updatePlayers(profiles);
 
-                plugin.getTabList().updatePlayer(entries);
+                    Map<UUID, TabListEntry> entries = new HashMap<>();
+                    for (NebulaProtos.PlayerProfile profile : profiles) {
+                        entries.put(UUID.fromString(profile.getPlayerUUID()), new TabListEntry(
+                                UUID.fromString(profile.getPlayerUUID()),
+                                profile.getPlayerName(),
+                                profile.getPlayerLatency(),
+                                profile.getCurrentServer(),
+                                PlayerProperty.fromProtobuf(profile.getPropertiesList()),
+                                profile.getHide()
+                        ));
+                    }
+
+                    plugin.getTabList().updatePlayer(entries);
+                });
             }
         }
     }
