@@ -44,11 +44,6 @@ repositories {
     }
 
     maven {
-        name = "dmulloy2"
-        url = uri("https://repo.dmulloy2.net/repository/public/")
-    }
-
-    maven {
         name = "startail-public"
         url = uri("https://maven.pkg.github.com/synchthia/pkg-startail-public")
         credentials {
@@ -83,7 +78,7 @@ dependencies {
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.8")
 
     // ProtocolLib
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.0.0")
+    compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
 
     // Protocol Buffers
     implementation("com.google.protobuf:protobuf-java:3.21.9")
