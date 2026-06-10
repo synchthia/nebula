@@ -2,17 +2,13 @@ plugins {
     id("java")
     id("maven-publish")
 
-    // use for Java 21 (see: https://github.com/johnrengelman/shadow/pull/876)
-    // id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.github.goooler.shadow") version "8.1.8"
-    id("io.papermc.paperweight.userdev") version "1.7.1" // Check for new versions at https://plugins.gradle.org/plugin/io.papermc.paperweight.userdev
-    id("xyz.jpenilla.run-paper") version "2.3.0" // Adds runServer and runMojangMappedServer tasks for testing
+    id("com.gradleup.shadow") version "9.4.2"
+    id("xyz.jpenilla.run-paper") version "3.0.2" // Adds runServer and runMojangMappedServer tasks for testing
 }
 
 group = "net.synchthia"
 version = "1.21-SNAPSHOT"
 description = "Nebula"
-paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
@@ -66,7 +62,7 @@ dependencies {
     implementation("net.synchthia:nebula-api:1.1-SNAPSHOT")
 
     // Paper
-    paperweight.paperDevBundle("1.21-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
 
     // BungeeCord
     compileOnly("net.md-5:bungeecord-api:1.20-R0.1-SNAPSHOT")
