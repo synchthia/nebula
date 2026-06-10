@@ -61,7 +61,7 @@ public class ServerSignManager {
                 bukkitSign.line(i, format[i]);
             }
 
-            bukkitSign.update();
+            bukkitSign.update(false, false);
         });
     }
 
