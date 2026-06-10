@@ -109,8 +109,17 @@ tasks {
         options.release.set(21)
     }
 
+    jar {
+        manifest {
+            attributes(
+                "paperweight-mappings-namespace" to "mojang",
+            )
+        }
+    }
+
     shadowJar {
         archiveFileName.set("${project.name}.jar")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
         mergeServiceFiles()
         fun reloc(pkg: String) = relocate(pkg, "net.synchthia.nebula.libs.$pkg")
 
@@ -139,6 +148,10 @@ tasks {
                 "bungeePluginMain" to "net.synchthia.nebula.bungee.NebulaPlugin"
             )
         )
+    }
+
+    runServer {
+        version("1.21.11")
     }
 }
 
