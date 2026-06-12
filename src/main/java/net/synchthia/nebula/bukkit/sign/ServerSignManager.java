@@ -111,7 +111,7 @@ public class ServerSignManager {
                 // Online
                 return new Component[]{
                         Message.create("<dark_blue><bold>[<server_name>]</bold></dark_blue>", TagResolver.resolver(resolvers)),
-                        Message.create(server.getMotd(), TagResolver.resolver(resolvers)),
+                        Message.create(server.getStatus().getDescription(), TagResolver.resolver(resolvers)),
                         Message.create("<dark_gray><bold><server_online_players>/<server_max_players></bold></dark_gray>", TagResolver.resolver(resolvers)),
                         ONLINE
                 };
